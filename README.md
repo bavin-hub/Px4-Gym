@@ -17,6 +17,10 @@ evaluation can run against Gazebo or against Isaac Sim through Pegasus
 Simulator. PX4 state and offboard setpoints pass through Micro XRCE-DDS and the
 checked-in ROS 2 packages.
 
+## Depth-Velocity Policy Evaluation
+
+![Starling 2 Max depth-velocity policy evaluation](results/depth_velocity_rlpx4.gif)
+
 ## Tasks
 
 | Task | Gymnasium ID | Obs. | Action | Deployment interface |
