@@ -1,99 +1,143 @@
 # Workspace Setup
 
-This guide sets up the full workspace used by PX4-Gym:
+This guide installs the complete Starling 2 Max training and SITL evaluation
+stack used by the `s2m_rlpx4` branch.
 
-- Isaac Sim `5.1.0`
-- Isaac Lab `main`
-- PX4-Autopilot `v1.14.3`
-- Micro XRCE-DDS Agent
-- ROS 2 workspace with `px4_msgs`, `px4_ros_com`, and `policy_test`
-- PX4 `dds_topics.yaml` replaced with this repository's topic map
+## Clone Px4-Gym
 
-## Repository Layout
+```bash
+git clone --branch s2m_rlpx4 https://github.com/bavin-hub/Px4-Gym.git
+cd Px4-Gym
+export PX4_GYM_ROOT="$(pwd)"
+```
 
-The main folders used by the workflows are:
+Keep `PX4_GYM_ROOT` set in every terminal used below. Commands use repository
+relative paths and do not assume a particular home-directory layout.
 
-- `aerial_isaac/`: Isaac Lab tasks, RL-Games configs, smoke tests, and training
-  scripts.
-- `policy_test/`: ROS 2 package that loads trained policies and publishes PX4
-  offboard commands.
-- `dds_topics.yaml`: PX4 uXRCE-DDS topic configuration used for the policy-test
-  bridge.
-- `docs/`: setup and workflow documentation.
+## Isaac Sim and Isaac Lab
 
-## Isaac Sim And Isaac Lab
-
-Install Isaac Sim `5.1.0` from the pre-built binaries, then install Isaac Lab
-from the `main` branch.  The Isaac Lab binary installation page is:
-
-<https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/binaries_installation.html>
-
-The Isaac Lab guide assumes the Isaac Sim directory is available as
-`${HOME}/isaacsim` on Linux and recommends exporting these variables:
+Install Isaac Sim 5.1.0 and export its launchers:
 
 ```bash
 export ISAACSIM_PATH="${HOME}/isaacsim"
-export ISAACSIM_PYTHON_EXE="${ISAACSIM_PATH}/python.sh"
+export ISAACSIM_PYTHON="${ISAACSIM_PATH}/python.sh"
+export ISAACSIM_PYTHON_EXE="${ISAACSIM_PYTHON}"
 ```
 
-Verify Isaac Sim first:
+Verify the installation:
 
 ```bash
-${ISAACSIM_PATH}/isaac-sim.sh
-${ISAACSIM_PYTHON_EXE} -c "print('Isaac Sim configuration is now complete.')"
+"${ISAACSIM_PATH}/isaac-sim.sh" --help
+"${ISAACSIM_PYTHON}" -c "print('Isaac Sim Python is ready')"
 ```
 
-Clone and install Isaac Lab from `main`:
+Install Isaac Lab with RL-Games support:
 
 ```bash
-git clone https://github.com/isaac-sim/IsaacLab.git --branch main
+git clone https://github.com/isaac-sim/IsaacLab.git
 cd IsaacLab
-ln -s ${ISAACSIM_PATH} _isaac_sim
+ln -s "${ISAACSIM_PATH}" _isaac_sim
 ./isaaclab.sh --install rl_games
 ```
 
-If you use a conda or uv environment for Isaac Lab, activate it before
-installing this repository's Isaac Lab package.  From this repository:
+Install the Starling task package into the Python environment used to launch
+Isaac Lab:
 
 ```bash
-cd aerial_isaac
-python -m pip install -e .
+cd "${PX4_GYM_ROOT}/rlPx4Controller/starling2max_px4_isaac_port"
+"${ISAACSIM_PYTHON}" -m pip install --editable .
 ```
 
-If you use the Isaac Sim bundled Python directly:
+The root C++ bindings are optional. If they are needed for separate controller
+experiments, install Eigen and the package in the desired Python environment:
 
 ```bash
-cd aerial_isaac
-${ISAACSIM_PYTHON_EXE} -m pip install -e .
+sudo apt install libeigen3-dev
+python3 -m pip install --editable "${PX4_GYM_ROOT}/rlPx4Controller"
 ```
 
-Run a quick environment smoke test:
+## Pegasus Simulator
+
+Pegasus v5.1.0 is required for PX4 SITL evaluation inside Isaac Sim 5.1.0. Use
+the official [Pegasus installation guide](https://pegasussimulator.github.io/PegasusSimulator/source/setup/installation.html),
+including its `isaac_run` shell function, then install the extension as a
+library in Isaac Sim's Python:
 
 ```bash
-cd aerial_isaac
-${ISAACSIM_PYTHON_EXE} scripts/smoke_x500_velocity.py --headless
+git clone --branch v5.1.0 https://github.com/PegasusSimulator/PegasusSimulator.git
+cd PegasusSimulator/extensions
+"${ISAACSIM_PYTHON}" -m pip install --editable pegasus.simulator
 ```
 
-## PX4 And Micro XRCE-DDS Agent
+Open a new terminal after defining `isaac_run`, then verify:
 
-Clone PX4 at the tested version:
+```bash
+isaac_run --help
+"${ISAACSIM_PYTHON}" -c "import pegasus.simulator; print('Pegasus is ready')"
+```
+
+The standalone evaluator requires a Starling 2 Max USD with articulation prims
+named `body`, `rotor0`, `rotor1`, `rotor2`, and `rotor3`. Export the included
+Starling URDF through Isaac Sim's URDF importer, verify those prim names, and
+save the result outside Git or as:
+
+```text
+sitl/isaac/starling2max.usd
+```
+
+The evaluator accepts the file through `--vehicle-usd`; it no longer depends on
+Pegasus' machine-local `ROBOTS["Modal"]` entry.
+
+## PX4 and SITL Assets
+
+Clone and build the tested PX4 version:
 
 ```bash
 git clone https://github.com/PX4/PX4-Autopilot.git --recursive
 cd PX4-Autopilot
 git checkout v1.14.3
 git submodule update --init --recursive
+export PX4_AUTOPILOT_ROOT="$(pwd)"
+make px4_sitl_default none
 ```
 
-Install PX4's host dependencies using the PX4 setup script for your platform,
-then build the Gazebo SITL target you use for the X500 workflow.  A common
-target is:
+Install the checked-in Starling Gazebo assets:
 
 ```bash
-make px4_sitl gz_x500
+cp -a "${PX4_GYM_ROOT}/sitl/gz/starling2max" \
+  "${PX4_AUTOPILOT_ROOT}/Tools/simulation/gz/models/"
+cp -a "${PX4_GYM_ROOT}/sitl/gz/starling2max_depth" \
+  "${PX4_AUTOPILOT_ROOT}/Tools/simulation/gz/models/"
+cp "${PX4_GYM_ROOT}/sitl/gz/default_trees.sdf" \
+  "${PX4_AUTOPILOT_ROOT}/Tools/simulation/gz/worlds/"
+cp "${PX4_GYM_ROOT}/rlPx4Controller/starling2max_px4_isaac_port/assets/robots/starling2max/4007_gz_starling2max" \
+  "${PX4_AUTOPILOT_ROOT}/ROMFS/px4fmu_common/init.d-posix/airframes/"
+cp "${PX4_GYM_ROOT}/sitl/gz/4008_gz_starling2max_depth" \
+  "${PX4_AUTOPILOT_ROOT}/ROMFS/px4fmu_common/init.d-posix/airframes/"
+cp "${PX4_GYM_ROOT}/sitl/isaac/10050_pegasus_starling2max" \
+  "${PX4_AUTOPILOT_ROOT}/ROMFS/px4fmu_common/init.d-posix/airframes/"
 ```
 
-Install Micro XRCE-DDS Agent:
+Add `4007_gz_starling2max`, `4008_gz_starling2max_depth`, and
+`10050_pegasus_starling2max` to the
+`px4_add_romfs_files(...)` list in
+`ROMFS/px4fmu_common/init.d-posix/airframes/CMakeLists.txt`, then rebuild:
+
+```bash
+cd "${PX4_AUTOPILOT_ROOT}"
+make px4_sitl_default
+```
+
+Install the repository DDS map and rebuild whenever it changes:
+
+```bash
+cp "${PX4_GYM_ROOT}/dds_topics.yaml" \
+  "${PX4_AUTOPILOT_ROOT}/src/modules/uxrce_dds_client/dds_topics.yaml"
+cd "${PX4_AUTOPILOT_ROOT}"
+make px4_sitl_default
+```
+
+## Micro XRCE-DDS Agent
 
 ```bash
 git clone https://github.com/eProsima/Micro-XRCE-DDS-Agent.git
@@ -106,72 +150,43 @@ sudo make install
 sudo ldconfig /usr/local/lib/
 ```
 
-Start the agent before running the ROS 2 policy node:
+The agent is started during evaluation with:
 
 ```bash
 MicroXRCEAgent udp4 -p 8888
 ```
 
-## DDS Topic Configuration
+## ROS 2 Workspace
 
-Replace PX4's uXRCE-DDS topic map with this repository's `dds_topics.yaml`.
-For PX4 `v1.14.3`, the file is normally located at:
-
-```text
-PX4-Autopilot/src/modules/uxrce_dds_client/dds_topics.yaml
-```
-
-Copy the repository file into that location, then rebuild PX4 SITL:
+Use ROS 2 Humble on Ubuntu 22.04. Add the matching PX4 message repositories to
+the checked-in workspace:
 
 ```bash
-cp /path/to/PX4-Gym/dds_topics.yaml \
-  /path/to/PX4-Autopilot/src/modules/uxrce_dds_client/dds_topics.yaml
-
-cd /path/to/PX4-Autopilot
-make px4_sitl gz_x500
+cd "${PX4_GYM_ROOT}/ros_ws/src"
+git clone --branch release/1.14 https://github.com/PX4/px4_msgs.git
+git clone --branch release/v1.14 https://github.com/PX4/px4_ros_com.git
 ```
 
-## ROS 2 Policy-Test Workspace
-
-Create a ROS 2 workspace and clone the PX4 ROS repositories that match the PX4
-`1.14` message set:
+Install Python runtime dependencies in the Python used by ROS 2:
 
 ```bash
-mkdir -p ~/px4_ros_ws/src
-cd ~/px4_ros_ws/src
-
-git clone https://github.com/PX4/px4_msgs.git --branch release/1.14
-git clone https://github.com/PX4/px4_ros_com.git --branch release/v1.14
-```
-
-Add this repository's `policy_test` package to the same `src` folder.  A
-symlink keeps local edits in this repository visible to the ROS workspace:
-
-```bash
-ln -s /path/to/PX4-Gym/policy_test ~/px4_ros_ws/src/policy_test
-```
-
-Install the Python packages used by the policy-test nodes:
-
-```bash
-python3 -m pip install --user rl-games PyYAML
+python3 -m pip install --user numpy pillow PyYAML rl-games
 python3 -m pip install --user torch --index-url https://download.pytorch.org/whl/cu128
 ```
 
-Build and source the ROS workspace:
+Build and source the workspace:
 
 ```bash
-cd ~/px4_ros_ws
+cd "${PX4_GYM_ROOT}/ros_ws"
+source /opt/ros/humble/setup.bash
+rosdep install --from-paths src --ignore-src --rosdistro humble -y
 colcon build --symlink-install
 source install/setup.bash
 ```
 
-The policy-test nodes load the policy config and checkpoint from ROS
-parameters.  Pass them when starting a controller:
+For Gazebo depth evaluation, also install the ROS-Gazebo image bridge matching
+ROS Humble and Gazebo Garden. Pegasus publishes `/starling/raw_depth` directly
+through Isaac Sim's ROS 2 bridge.
 
-```bash
-ros2 run policy_test position_sim_controller --ros-args \
-  -p policy_config:=/absolute/path/to/rl_games_x500_position.yaml \
-  -p checkpoint:=/absolute/path/to/checkpoint.pth \
-  -p device:=cuda:0
-```
+Continue with [training](isaac_lab_training_eval.md) or
+[SITL evaluation](px4_sitl_policy_test.md).

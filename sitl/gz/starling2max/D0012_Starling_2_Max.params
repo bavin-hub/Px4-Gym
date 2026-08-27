@@ -1,0 +1,222 @@
+################################################################################
+# Hardware-Specific Configuration for ModalAI D0012 Starling Max
+#
+# This is NOT a complete set of PX4 parameters. These are non-default parameters
+# specific to the airframe and are meant to be loaded over the defaults.
+#
+# work in progress
+################################################################################
+
+
+################################################################################
+# quadcopter X type
+################################################################################
+1	1	SYS_AUTOSTART	4001	6
+1	1	MAV_TYPE	2	6
+1	1	SENS_BOARD_ROT	0	6
+
+# mag current compensation TODO
+# 1	1	CAL_MAG_COMP_TYP	2	6
+# 1	1	CAL_MAG0_XCOMP	3.499	9
+# 1	1	CAL_MAG0_YCOMP	-0.383	9
+# 1	1	CAL_MAG0_ZCOMP	4.446	9
+
+# expected hover current, used to initialize the battery average current filter
+# for flight time remaining estimate, so we use current at takeoff with full battery.
+1	1	BAT_AVRG_CURRENT	3.4	9
+
+
+################################################################################
+# Motors/ESCs
+################################################################################
+
+# motor specific config
+1	1	MPC_THR_HOVER	0.13	9
+1	1	THR_MDL_FAC	0.9	9
+1	1	VOXL_ESC_RPM_MAX	12000	6
+1	1	VOXL_ESC_RPM_MIN	2000	6
+1	1	MPC_THR_MAX	0.60	9
+1	1	MPC_THR_MIN	0.04	9
+1	1	MPC_MANTHR_MIN	0.04	9
+
+# motor mapping
+1	1	VOXL_ESC_FUNC1	102	6
+1	1	VOXL_ESC_FUNC2	103	6
+1	1	VOXL_ESC_FUNC3	101	6
+1	1	VOXL_ESC_FUNC4	104	6
+
+# set all directions to "forward" the correct motor spins directions should
+# be set by ESC firmware and correct/consistent wiring
+1	1	VOXL_ESC_SDIR1	0	6
+1	1	VOXL_ESC_SDIR2	0	6
+1	1	VOXL_ESC_SDIR3	0	6
+1	1	VOXL_ESC_SDIR4	0	6
+
+# MISC ModalIO common setup
+1	1	VOXL_ESC_BAUD	2000000	6
+1	1	VOXL_ESC_CONFIG	1	6
+1	1	VOXL_ESC_MODE	0	6
+1	1	VOXL_ESC_REV	0	6
+1	1	VOXL_ESC_T_COSP	0.990000009536743164	9
+1	1	VOXL_ESC_T_DEAD	20	6
+1	1	VOXL_ESC_T_EXPO	35	6
+1	1	VOXL_ESC_T_MINF	0.150000005960464478	9
+1	1	VOXL_ESC_T_PERC	90	6
+1	1	VOXL_ESC_VLOG	1	6
+
+# disable bat scaling with our own RPM controlled ESCs!
+1	1	MC_BAT_SCALE_EN	0	6
+
+
+
+################################################################################
+# Geometry (voxl-vision-hub provides EV VIO data at COG so EV_POS is 0
+################################################################################
+#
+1	1	EKF2_IMU_POS_X	0.005	9
+1	1	EKF2_IMU_POS_Y	0.008	9
+1	1	EKF2_IMU_POS_Z	-0.0116	9
+1	1	EKF2_EV_POS_X	0.0	9
+1	1	EKF2_EV_POS_Y	0.0	9
+1	1	EKF2_EV_POS_Z	0.0	9
+
+
+###############################################################################
+# Rotor locations for mixing
+# TODO update this for new frame, not critical though
+###############################################################################
+
+1	1	CA_AIRFRAME	0	6
+1	1	CA_ROTOR_COUNT	4	6
+1	1	CA_ROTOR0_PX	0.085	9
+1	1	CA_ROTOR0_PY	0.0625	9
+1	1	CA_ROTOR1_PX	-0.085	9
+1	1	CA_ROTOR1_PY	-0.0625	9
+1	1	CA_ROTOR2_PX	0.085	9
+1	1	CA_ROTOR2_PY	-0.0625	9
+1	1	CA_ROTOR3_PX	-0.085	9
+1	1	CA_ROTOR3_PY	0.0625	9
+1	1	CA_ROTOR0_AX	0.0	9
+1	1	CA_ROTOR0_AY	0.0	9
+1	1	CA_ROTOR1_AX	0.0	9
+1	1	CA_ROTOR1_AY	0.0	9
+1	1	CA_ROTOR2_AX	0.0	9
+1	1	CA_ROTOR2_AY	0.0	9
+1	1	CA_ROTOR3_AX	0.0	9
+1	1	CA_ROTOR3_AY	0.0	9
+1	1	CA_ROTOR0_KM	0.05	9
+1	1	CA_ROTOR1_KM	0.05	9
+1	1	CA_ROTOR2_KM	-0.05	9
+1	1	CA_ROTOR3_KM	-0.05	9
+
+################################################################################
+# Noise management
+################################################################################
+
+1	1	MOT_SLEW_MAX	0.0	9
+1	1	IMU_DGYRO_CUTOFF	40.0	9
+1	1	IMU_ACCEL_CUTOFF	60.0	9
+1	1	IMU_GYRO_CUTOFF	80.0	9
+
+# Dynamic Notch Filter tracking ModalAI ESC RPM
+1	1	IMU_GYRO_DNF_EN	1	6
+1	1	IMU_GYRO_DNF_HMC	3	6
+1	1	IMU_GYRO_DNF_BW	15	9
+
+
+################################################################################
+# Attitude PID
+################################################################################
+
+# disable airmode, it make the system unpredictable when touching the ground
+1	1	MC_AIRMODE	0	6
+
+# Common
+1	1	MC_ROLLRATE_K	1.0	9
+1	1	MC_PITCHRATE_K	1.0	9
+1	1	MC_YAWRATE_K	1.0	9
+1	1	MC_ROLL_CUTOFF	25.0	9
+1	1	MC_PITCH_CUTOFF	25.0	9
+1	1	MC_YAW_CUTOFF	15.0	9
+
+
+# James tune
+# 1	1	MC_ROLL_P	8.0	9
+# 1	1	MC_ROLLRATE_P	0.06	9
+# 1	1	MC_ROLLRATE_I	0.05	9
+# 1	1	MC_ROLLRATE_D	0.0015	9
+
+# autotune 0.12s rise time
+1	1	MC_ROLL_P	8.0	9
+1	1	MC_ROLLRATE_P	0.064	9
+1	1	MC_ROLLRATE_I	0.100	9
+1	1	MC_ROLLRATE_D	0.0013	9
+
+
+# James tune
+# 1	1	MC_PITCH_P	8.0	9
+# 1	1	MC_PITCHRATE_P	0.07	9
+# 1	1	MC_PITCHRATE_I	0.05	9
+# 1	1	MC_PITCHRATE_D	0.0015	9
+
+# autotune 0.12s rise time
+1	1	MC_PITCH_P	8.0	9
+1	1	MC_PITCHRATE_P	0.064	9
+1	1	MC_PITCHRATE_I	0.096	9
+1	1	MC_PITCHRATE_D	0.0011	9
+
+
+# Yaw PID
+1	1	MC_YAW_P	2.8	9
+1	1	MC_YAWRATE_P	0.07	9
+1	1	MC_YAWRATE_I	0.5	9
+1	1	MC_YAWRATE_D	0.0	9
+
+
+# drop max rates down from default of 220 so VIO camera is happier
+# for reference, the voxl-vision-hub figure 8 peaks at 135 degrees/s yaw max
+1	1	MC_ROLLRATE_MAX	130.0	9
+1	1	MC_PITCHRATE_MAX	130.0	9
+1	1	MC_YAWRATE_MAX	150.0	9
+
+# autotune settings
+# 1	1	MC_AT_AXES	1	6
+# 1	1	MC_AT_RISE_TIME	0.12	9
+# 1	1	MC_AT_SYSID_AMP	4.0	9
+
+###############################################################################
+#VIO<->PX4 MPC
+###############################################################################
+1	1	COM_FAIL_ACT_T	0.000	9
+1	1	EKF2_EV_QMIN	16	6
+1	1	EKF2_HGT_REF	3	6
+
+## FYI TO FUTURE SELF
+## COM_POS_FS_DELAY IS INT32, THUS WE CAN'T MAKE IT IN (0,1), LEAVING AS DEFAULT 1
+## COM_ARM_EKF_HGT SETS INOV RATIO FOR ARMING, COULD SET TO 0 TO DEACTIVATE IN THE FUTURE
+
+###############################################################################
+# takeoff and land params
+#
+# spoolup and ramp only help in position mode
+###############################################################################
+
+# smooth takeoff, slower than the little starling since Max is more powerful and a little scary
+1	1	MPC_TKO_RAMP_T	2.00	9
+
+# wait 2s for motors to start up
+1	1	COM_SPOOLUP_TIME	2.0	9
+
+# this is speed when autonomously taking off, nothing to do with position mode
+1	1	MPC_TKO_SPEED	1.50	9
+
+# increase rotation check a bit to stop it think it's taken off when arming
+1	1	LNDMC_ROT_MAX	30.0	9
+
+## speed up auto disarm on the ground
+1	1	LNDMC_TRIG_TIME	0.5	9
+1	1	COM_DISARM_LAND	0.1	9
+
+# seconds to auto-disarm if armed but not taken off yet
+1	1	COM_DISARM_PRFLT	20	9
+

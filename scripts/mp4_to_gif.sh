@@ -24,7 +24,7 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
   exit 0
 fi
 
-input="${1:-results/x500_attitude.mp4}"
+input="${1:-results/starling2max_policy.mp4}"
 output="${2:-${input%.*}.gif}"
 fps="${FPS:-12}"
 width="${WIDTH:-560}"

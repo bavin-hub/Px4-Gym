@@ -1,79 +1,86 @@
 # Px4-Gym
 
 [![PX4](https://img.shields.io/badge/PX4-v1.14.3-silver.svg)](https://github.com/PX4/PX4-Autopilot/releases/tag/v1.14.3)
-[![IsaacSim](https://img.shields.io/badge/IsaacSim-5.1.0-silver.svg)](https://docs.isaacsim.omniverse.nvidia.com/latest/index.html)
-[![Isaac Lab](https://img.shields.io/badge/IsaacLab-main-silver.svg)](https://isaac-sim.github.io/IsaacLab)
-[![Python](https://img.shields.io/badge/python-3.11-blue.svg)](https://docs.python.org/3/whatsnew/3.11.html)
-[![Linux platform](https://img.shields.io/badge/platform-ubuntu--22.04-orange.svg)](https://releases.ubuntu.com/22.04/)
-[![GPU](https://img.shields.io/badge/GPU-RTX%205090-green.svg)](https://www.nvidia.com/)
+[![Isaac Sim](https://img.shields.io/badge/Isaac%20Sim-5.1.0-silver.svg)](https://docs.isaacsim.omniverse.nvidia.com/5.1.0/)
+[![Pegasus](https://img.shields.io/badge/Pegasus-v5.1.0-silver.svg)](https://pegasussimulator.github.io/PegasusSimulator/)
+[![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://docs.python.org/3.11/)
+[![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04-orange.svg)](https://releases.ubuntu.com/22.04/)
 
-PX4-Gym contains reinforcement-learning training, evaluation, and SITL policy
-testing pipelines for PX4-compatible quadrotors.  The Isaac Lab side trains and
-evaluates policies at multiple control levels, and the ROS 2/PX4 side runs the
-trained policies against PX4 SITL in Gazebo.
+PX4-Gym provides reinforcement-learning training, in-simulator evaluation, and
+PX4 SITL deployment for the Starling 2 Max quadrotor. The `s2m_rlpx4` branch
+wires a Torch-native port of the RL-PX4 attitude, rate, allocation, motor, and
+velocity cascade into Isaac Lab, then preserves the same policy contracts in
+ROS 2 deployment nodes.
 
-The repository is organized around a sim-to-SITL workflow: train a policy in
-Isaac Lab, evaluate it in the same task wrapper, then test the exported policy
-through PX4 offboard interfaces in Gazebo.  The current Isaac Lab tasks target
-the X500 quadrotor and keep the deployment contract close to PX4 by preserving
-the policy observation/action semantics used by the ROS 2 policy-test nodes.
-The low-level controller, motor model, allocation, frame conversions, and task
-logic are kept explicit so that policies trained in Isaac Lab can be tested
-against PX4 with minimal glue code.
+Training and same-environment evaluation run in Isaac Lab. SITL policy
+evaluation can run against Gazebo or against Isaac Sim through Pegasus
+Simulator. PX4 state and offboard setpoints pass through Micro XRCE-DDS and the
+checked-in ROS 2 packages.
 
-The available task set covers position, velocity, and attitude-delta policy
-interfaces.  Each task has its own RL-Games config, smoke test, training script,
-and evaluation path.  The rewards for all tasks were tuned heavily so the
-trained policies remain stable when moved from Isaac Lab evaluation into PX4
-SITL.  A few tasks may still require further reward tuning depending on the
-vehicle model, command envelope, and deployment setup.
+## Tasks
 
-Known working versions and tested platform:
+| Task | Gymnasium ID | Obs. | Action | Deployment interface |
+|---|---|---:|---|---|
+| Velocity waypoint | `AerialIsaac-Starling2Max-Velocity-v0` | 18 | Body-FLU velocity and yaw rate | PX4 trajectory setpoint |
+| Position waypoint | `AerialIsaac-Starling2Max-Position-v0` | 18 | Relative position and yaw | PX4 trajectory setpoint |
+| Attitude delta | `AerialIsaac-Starling2Max-AttitudeDelta-v0` | 98 | Collective and attitude deltas | PX4 attitude setpoint |
+| Direct body rate | `AerialIsaac-Starling2Max-Rates-v0` | 98 | CTBR | PX4 body-rate setpoint |
+| Depth velocity navigation | `AerialIsaac-Starling2Max-Navigation-v0` | 81 | Speed, inclination, and yaw delta | PX4 trajectory setpoint |
+| Depth attitude navigation | `AerialIsaac-Starling2Max-DepthAttitudeDelta-v0` | 81 | Collective, pitch delta, and yaw delta | PX4 attitude setpoint |
 
-- PX4: `v1.14.3`
-- Isaac Sim: `5.1.0`
-- Isaac Lab: `main`
-- PX4 ROS message/bridge repositories: PX4 `1.14` release branches
-- Python: `3.11`
-- Ubuntu: `22.04`
-- GPU: NVIDIA RTX `5090`
+The 98-D policies include strided command/response history. The 81-D depth
+policies include a frozen 64-D Deep Collision Encoder latent from a 240x180,
+0.2-to-6 m forward depth stream.
+
+## Repository Layout
+
+- `rlPx4Controller/`: upstream C++/pybind controller plus the isolated
+  `starling2max_px4_isaac_port/` Isaac Lab package.
+- `ros_ws/src/policy_test/`: position, velocity, attitude-delta, and direct-rate
+  PX4 offboard deployment nodes.
+- `ros_ws/src/depth_policy/`: the two DCE depth-policy deployment nodes and a
+  depth viewer.
+- `sitl/gz/`: Starling 2 Max Gazebo models, depth model, airframe, and tree world.
+- `sitl/isaac/`: standalone Pegasus/PX4 depth-navigation evaluator.
+- `dds_topics.yaml`: PX4 v1.14 uXRCE-DDS topic map used by the ROS nodes.
+- `docs/`: setup, training, architecture, and SITL procedures.
+
+The Isaac training package uses the Torch-native controller port. Installing
+the root C++ `rlPx4Controller` Python bindings is optional and is not required
+for vectorized training or policy deployment.
 
 ## Documentation
 
-Start with the setup guide, then use the workflow-specific guide you need:
+1. [Workspace setup](docs/workspace_setup.md)
+2. [Isaac Lab training and evaluation](docs/isaac_lab_training_eval.md)
+3. [PX4 SITL policy evaluation](docs/px4_sitl_policy_test.md)
+4. [Starling RL-PX4 architecture](docs/starling2max_rlpx4.md)
 
-- [Workspace setup](docs/workspace_setup.md): install Isaac Sim, Isaac Lab,
-  PX4, Micro XRCE-DDS Agent, and the ROS 2 policy-test workspace.
-- [Isaac Lab training and evaluation](docs/isaac_lab_training_eval.md): run
-  the X500 position, velocity, and attitude-delta training/evaluation scripts.
-- [PX4 SITL policy testing](docs/px4_sitl_policy_test.md): run a trained
-  policy through PX4 `v1.14.3`, Micro XRCE-DDS, ROS 2, and Gazebo.
-- [Aerial Isaac Lab notes](docs/aerial_isaac.md): implementation details for
-  the Aerial Gym task/controller port and policy observation contract.
+## Tested Stack
 
-## Results
+- Ubuntu 22.04
+- Python 3.11
+- Isaac Sim 5.1.0
+- Isaac Lab `main`
+- Pegasus Simulator v5.1.0
+- PX4-Autopilot v1.14.3
+- `px4_msgs` `release/1.14`
+- `px4_ros_com` `release/v1.14`
 
-X500 attitude policy tested with PX4 SITL:
+Record the exact Isaac Lab commit for reproducible experiments because its
+`main` branch changes independently of this repository.
 
-[![X500 attitude policy tested with PX4 SITL](results/x500_attitude.gif)](results/x500_attitude.gif)
+## Remaining Work
 
-Regenerate the GIF from the source MP4 with:
+- Run hardware-in-the-loop and real-vehicle validation.
+- Add a sensor/EKF noise evaluation path.
+- Add fixed-wing tasks and deployment nodes.
 
-```bash
-scripts/mp4_to_gif.sh results/x500_attitude.mp4 results/x500_attitude.gif
-```
+## Acknowledgements
 
-## TODO
-
-- Add training pipelines for more control levels:
-  - thrust and body rates
-  - thrust and torques
-- Add an EKF path to simulate real-time sensor noise.
-- Add fixed-wing support.
-
-## Acknowledgement
-
-The low-level geometric controller used by these policies is ported from
-[ntnu-arl/aerial_gym_simulator](https://github.com/ntnu-arl/aerial_gym_simulator).
-Thank you to the Aerial Gym Simulator authors for releasing the controller and
-simulation work that this Isaac Lab port builds on.
+The controller stack derives from
+[rlPx4Controller](https://github.com/emNavi/rlPx4Controller) and the geometric
+controller/task lineage in
+[Aerial Gym Simulator](https://github.com/ntnu-arl/aerial_gym_simulator).
+[Pegasus Simulator](https://pegasussimulator.github.io/PegasusSimulator/)
+provides the Isaac Sim/PX4 SITL integration used by the standalone evaluator.

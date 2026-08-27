@@ -1,0 +1,81 @@
+# Ported from Aerial Gym's ppo_aerial_quad_navigation.yaml (the Deep Collision
+# Encoder navigation policy) and reshaped to this repository's rl_games wiring.
+#
+# Differences from the other starling2max yamls in this directory are deliberate
+# and come from the source config:
+#   * rnn: a GRU(32) after the MLP -- the navigation policy is recurrent.
+#   * gamma 0.98 instead of 0.99.
+#   * entropy_coef 0 instead of 1e-4.
+#   * normalize_input: true. The 81-D observation ends with 64 VAE latents; the
+#     source config normalises the input and we keep that. Note the running
+#     statistics do drift as the obstacle curriculum changes the depth
+#     distribution -- set to false if that turns out to hurt.
+#   * value_bootstrap: true, since episodes end on timeout as well as collision.
+params:
+  seed: 1
+  env:
+    clip_actions: 1.0
+  algo:
+    name: a2c_continuous
+  model:
+    name: continuous_a2c_logstd
+  network:
+    name: actor_critic
+    separate: false
+    space:
+      continuous:
+        mu_activation: None
+        sigma_activation: None
+        mu_init: {name: default}
+        sigma_init: {name: const_initializer, val: 0}
+        fixed_sigma: true
+    mlp:
+      units: [256, 128, 64]
+      activation: elu
+      initializer: {name: default, scale: 2}
+    rnn:
+      name: gru
+      units: 32
+      layers: 1
+      before_mlp: false
+      layer_norm: true
+  config:
+    env_name: rlgpu
+    device: cuda:0
+    device_name: cuda:0
+    name: starling2max_navigation_dce_port
+    reward_shaper: {scale_value: 0.1}
+    normalize_advantage: true
+    gamma: 0.98
+    tau: 0.95
+    ppo: true
+    # CHANGE7: constant learning rate. rl_games treats any lr_schedule other than
+    # 'adaptive' or 'linear' as IdentityScheduler, i.e. no scheduling, so the LR
+    # stays at learning_rate for the whole run. kl_threshold is only read inside
+    # the adaptive branch and is now unused; kept for reference.
+    # To revert CHANGE7: lr_schedule: adaptive.
+    learning_rate: 1.0e-4
+    lr_schedule: None
+    kl_threshold: 0.016
+    save_best_after: 10
+    score_to_win: 100000
+    grad_norm: 1.0
+    entropy_coef: 0
+    truncate_grads: true
+    e_clip: 0.2
+    clip_value: false
+    # Overridden by --num-envs. 256 is a sane starting point: each environment
+    # ray-casts 180x240 = 43200 rays per policy step through the 186-slot field.
+    num_actors: 256
+    horizon_length: 32
+    minibatch_size: 2048
+    mini_epochs: 4
+    critic_coef: 2
+    normalize_input: true
+    normalize_value: true
+    bounds_loss_coef: 0.0001
+    max_epochs: 500
+    use_diagnostics: true
+    value_bootstrap: true
+    use_smooth_clamp: false
+    player: {render: false, deterministic: true, games_num: 100000}

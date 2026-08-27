@@ -1,0 +1,107 @@
+#!/bin/sh
+#
+# @name Gazebo starling2max
+#
+# @type Quadrotor
+#
+
+. ${R}etc/init.d/rc.mc_defaults
+
+PX4_SIMULATOR=${PX4_SIMULATOR:=gz}
+PX4_GZ_WORLD=${PX4_GZ_WORLD:=default}
+PX4_SIM_MODEL=${PX4_SIM_MODEL:=starling2max}
+
+param set-default SIM_GZ_EN 1
+
+param set-default SENS_EN_GPSSIM 1
+param set-default SENS_EN_BAROSIM 0
+param set-default SENS_EN_MAGSIM 1
+
+param set-default BAT_AVRG_CURRENT 3.4
+param set-default MPC_THR_HOVER 0.13
+param set-default THR_MDL_FAC 0.9
+param set-default MPC_THR_MAX 0.60
+param set-default MPC_THR_MIN 0.04
+param set-default MPC_MANTHR_MIN 0.04
+param set-default MC_BAT_SCALE_EN 0
+param set-default EKF2_IMU_POS_X 0.005
+param set-default EKF2_IMU_POS_Y 0.008
+param set-default EKF2_IMU_POS_Z -0.0116
+param set-default EKF2_EV_POS_X 0.0
+param set-default EKF2_EV_POS_Y 0.0
+param set-default EKF2_EV_POS_Z 0.0
+param set-default MOT_SLEW_MAX 0.0
+param set-default IMU_DGYRO_CUTOFF 40.0
+param set-default IMU_ACCEL_CUTOFF 60.0
+param set-default IMU_GYRO_CUTOFF 80.0
+#param set-default IMU_GYRO_DNF_EN 1
+param set-default IMU_GYRO_DNF_HMC 3
+param set-default IMU_GYRO_DNF_BW 15
+param set-default MC_AIRMODE 0
+param set-default MC_ROLLRATE_K 1.0
+param set-default MC_PITCHRATE_K 1.0
+param set-default MC_YAWRATE_K 1.0
+param set-default MC_ROLL_P 8.0
+param set-default MC_ROLLRATE_P 0.064
+param set-default MC_ROLLRATE_I 0.100
+param set-default MC_ROLLRATE_D 0.0013
+param set-default MC_PITCH_P 8.0
+param set-default MC_PITCHRATE_P 0.064
+param set-default MC_PITCHRATE_I 0.096
+param set-default MC_PITCHRATE_D 0.0011
+param set-default MC_YAW_P 2.8
+param set-default MC_YAWRATE_P 0.07
+param set-default MC_YAWRATE_I 0.5
+param set-default MC_YAWRATE_D 0.0
+param set-default MC_ROLLRATE_MAX 130.0
+param set-default MC_PITCHRATE_MAX 130.0
+param set-default MC_YAWRATE_MAX 150.0
+param set-default COM_FAIL_ACT_T 0.000
+param set-default EKF2_EV_QMIN 16
+param set-default EKF2_HGT_REF 3
+param set-default MPC_TKO_RAMP_T 2.00
+param set-default COM_SPOOLUP_TIME 2.0
+param set-default MPC_TKO_SPEED 1.50
+param set-default LNDMC_ROT_MAX 30.0
+param set-default LNDMC_TRIG_TIME 0.5
+param set-default COM_DISARM_LAND 0.1
+param set-default COM_DISARM_PRFLT 20
+param set-default CA_AIRFRAME 0
+param set-default CA_ROTOR_COUNT 4
+param set-default CA_ROTOR0_PX 0.095
+param set-default CA_ROTOR0_PY 0.13
+param set-default CA_ROTOR1_PX -0.095
+param set-default CA_ROTOR1_PY -0.13
+param set-default CA_ROTOR2_PX 0.095
+param set-default CA_ROTOR2_PY -0.13
+param set-default CA_ROTOR3_PX -0.095
+param set-default CA_ROTOR3_PY 0.13
+param set-default CA_ROTOR0_AX 0.0
+param set-default CA_ROTOR0_AY 0.0
+param set-default CA_ROTOR1_AX 0.0
+param set-default CA_ROTOR1_AY 0.0
+param set-default CA_ROTOR2_AX 0.0
+param set-default CA_ROTOR2_AY 0.0
+param set-default CA_ROTOR3_AX 0.0
+param set-default CA_ROTOR3_AY 0.0
+param set-default CA_ROTOR0_KM 0.05
+param set-default CA_ROTOR1_KM 0.05
+param set-default CA_ROTOR2_KM -0.05
+param set-default CA_ROTOR3_KM -0.05
+param set-default MPC_XY_VEL_MAX 1.00
+param set-default MPC_TILTMAX_AIR 20.0
+
+param set-default SIM_GZ_EC_FUNC1 101
+param set-default SIM_GZ_EC_FUNC2 102
+param set-default SIM_GZ_EC_FUNC3 103
+param set-default SIM_GZ_EC_FUNC4 104
+
+param set-default SIM_GZ_EC_MIN1 209
+param set-default SIM_GZ_EC_MIN2 209
+param set-default SIM_GZ_EC_MIN3 209
+param set-default SIM_GZ_EC_MIN4 209
+
+param set-default SIM_GZ_EC_MAX1 1257
+param set-default SIM_GZ_EC_MAX2 1257
+param set-default SIM_GZ_EC_MAX3 1257
+param set-default SIM_GZ_EC_MAX4 1257

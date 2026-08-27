@@ -1,0 +1,12 @@
+[project]
+name = "starling2max-px4-isaac-port"
+version = "0.1.0"
+description = "Starling 2 Max Isaac Lab training tasks using a Torch-native PX4-style cascade"
+requires-python = ">=3.10"
+dependencies = ["torch", "gymnasium", "pyyaml"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

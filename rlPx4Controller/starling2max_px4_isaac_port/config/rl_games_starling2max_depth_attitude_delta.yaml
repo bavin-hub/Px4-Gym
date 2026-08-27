@@ -1,0 +1,84 @@
+# Depth navigation with attitude-delta actions, at a 50 Hz policy rate.
+#
+# Same network as rl_games_starling2max_navigation.yaml (MLP [256,128,64] + a
+# GRU(32)), because the observation is the same 81-D vector ending in the frozen
+# depth latent. What differs is everything that depends on the 5x higher policy
+# rate. Previous 100 Hz values are retained beside active settings for reversion:
+#
+#   * gamma 0.996 ~= 0.998^2, preserving the discount per second at half rate.
+#   * horizon_length 32 preserves the old 0.64-second rollout span.
+#   * minibatch_size 2048 preserves four minibatches per rollout at 256 actors.
+#
+# Everything else follows the Aerial Gym navigation config.
+params:
+  seed: 1
+  env:
+    clip_actions: 1.0
+  algo:
+    name: a2c_continuous
+  model:
+    name: continuous_a2c_logstd
+  network:
+    name: actor_critic
+    separate: false
+    space:
+      continuous:
+        mu_activation: None
+        sigma_activation: None
+        mu_init: {name: default}
+        sigma_init: {name: const_initializer, val: 0}
+        fixed_sigma: true
+    mlp:
+      units: [256, 128, 64]
+      activation: elu
+      initializer: {name: default, scale: 2}
+    rnn:
+      name: gru
+      units: 32
+      layers: 1
+      before_mlp: false
+      layer_norm: true
+  config:
+    env_name: rlgpu
+    device: cuda:0
+    device_name: cuda:0
+    name: starling2max_depth_attitude_delta
+    # Previous dense reward: reward_shaper: {scale_value: 0.1}
+    reward_shaper: {scale_value: 1.0}
+    normalize_advantage: true
+    # Previous 100 Hz value: gamma: 0.998
+    gamma: 0.996
+    tau: 0.95
+    ppo: true
+    # CHANGE7: constant learning rate. rl_games treats any lr_schedule other than
+    # 'adaptive' or 'linear' as IdentityScheduler, i.e. no scheduling, so the LR
+    # stays at learning_rate for the whole run. kl_threshold is only read inside
+    # the adaptive branch and is now unused; kept for reference.
+    # To revert CHANGE7: lr_schedule: adaptive.
+    learning_rate: 1.0e-4
+    lr_schedule: None
+    kl_threshold: 0.016
+    save_best_after: 10
+    score_to_win: 100000
+    grad_norm: 1.0
+    entropy_coef: 0
+    truncate_grads: true
+    e_clip: 0.2
+    clip_value: false
+    # Overridden by --num-envs. The depth camera renders at 10 Hz, so the
+    # ray-cast cost per policy step is a tenth of the velocity task's; 256 is
+    # still a sane starting point because the depth sensor remains at 10 Hz.
+    num_actors: 256
+    # Previous 100 Hz values: horizon_length: 64, minibatch_size: 4096
+    horizon_length: 32
+    minibatch_size: 2048
+    mini_epochs: 4
+    critic_coef: 2
+    normalize_input: true
+    normalize_value: true
+    bounds_loss_coef: 0.0001
+    max_epochs: 1000
+    use_diagnostics: true
+    value_bootstrap: true
+    use_smooth_clamp: false
+    player: {render: false, deterministic: true, games_num: 100000}

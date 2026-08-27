@@ -1,0 +1,117 @@
+model:
+  name: starling2max
+  root_body_name: vehicle
+  motor_body_names:
+    - vehicle_rotor0
+    - vehicle_rotor1
+    - vehicle_rotor2
+    - vehicle_rotor3
+
+frames:
+  body_frame: FLU
+  rotor_axis: [0.0, 0.0, 1.0]
+
+normalization:
+  # Derived from URDF aggregate mass 0.49588 kg (body 0.46788 + 4*0.007) and
+  # MPC_THR_HOVER = 0.13: max_thrust = mass * 9.81 / hover_throttle, so hover
+  # lands exactly at 0.13 throttle for this frame.
+  max_thrust: 37.42771384615385
+  # Two motors at full per-motor thrust (9.356928461538462 N) acting on the
+  # URDF arm: roll uses |y| = 0.13 m, pitch uses |x| = 0.095 m. These must use
+  # the URDF joint origins (where the forces are physically applied), NOT the
+  # PX4 CA_ROTOR*_PX/PY params, which describe a different/FRD frame.
+  max_roll_moment: 2.4328014
+  max_pitch_moment: 1.7778164
+  # Inferred from max_thrust/4 and CA_ROTOR*_KM magnitude 0.05.
+  max_yaw_moment: 0.9356928
+  clip: true
+
+allocation:
+  algorithm: pseudo_inverse
+  actuator_min: 0.04
+  actuator_max: 0.60
+  slew_rate: 0.0
+  # Rotor positions in the URDF body (FLU) frame, taken from the joint0..joint3
+  # origins in starling2max.urdf. Forces are applied at these link locations, so
+  # the allocation effectiveness MUST use these, not the PX4 CA_ROTOR*_PX/PY
+  # params (which are in a differently-sized/FRD frame and flip the y sign,
+  # inverting the roll axis). Order matches motor_body_names rotor0..rotor3.
+  motor_positions:
+    - [0.095, -0.13, 0.0195]
+    - [-0.095, 0.13, 0.0195]
+    - [0.095, 0.13, 0.0195]
+    - [-0.095, -0.13, 0.0195]
+  turning_directions:
+    - ccw
+    - ccw
+    - cw
+    - cw
+  # Signs inferred from CA_ROTOR*_KM = [0.05, 0.05, -0.05, -0.05].
+  direction_signs:
+    - 1.0
+    - 1.0
+    - -1.0
+    - -1.0
+
+function_motors:
+  # 1.0 = exact quadratic linearization for the pure-omega^2 Gazebo motor, so
+  # MPC_THR_HOVER (0.13) produces exactly vehicle weight. The real airframe's
+  # THR_MDL_FAC=0.9 compensates a real motor's part-quadratic curve; the sim
+  # motor is fully quadratic, so 0.9 under-compensates and 0.13 only makes ~83%
+  # of weight (vehicle sinks at nominal hover). Keep the tuned 0.13 hover point
+  # and fix the motor calibration instead.
+  thrust_model_factor: 1.0
+  reversible_flags: 0
+
+mixing_output:
+  # Active Gazebo motor-speed command range. VOXL_ESC_RPM_MIN is documented
+  # below, but not used as a sim offset because Gazebo thrust is omega^2.
+  output_min: 0.0
+  output_max: 1256.6370614359173
+  output_disarmed: 0.0
+  output_failsafe: 0.0
+  reverse_mask: 0
+  ramp_up: false
+  ramp_time: 2.0
+
+motor_model:
+  max_rot_velocity: 1256.6370614359173
+  # Per-motor max_thrust (9.356928461538462 N) / max_rot_velocity^2 (400 pi).
+  motor_constant: 5.925386e-06
+  # Magnitude inferred from CA_ROTOR*_KM.
+  moment_constant: 0.05
+  # Measured motor step-response constants (~55 ms up, ~85 ms down).
+  time_constant_up: 0.055
+  time_constant_down: 0.085
+  rotor_drag_coefficient: 8.06428e-05
+  # Measured rolling-moment coefficient: T = 5.38697e-8 * omega^2 [Nm/(rad/s)^2].
+  rolling_moment_coefficient: 5.38697e-08
+  rotor_velocity_slowdown_sim: 10.0
+  max_relative_airspeed: 25.0
+  reversible: false
+  enable_air_drag: true
+  enable_rolling_moment: true
+
+source_px4_params:
+  MPC_THR_HOVER: 0.13
+  MPC_THR_MIN: 0.04
+  MPC_THR_MAX: 0.60
+  THR_MDL_FAC: 0.9
+  MOT_SLEW_MAX: 0.0
+  VOXL_ESC_RPM_MIN: 2000
+  VOXL_ESC_RPM_MAX: 12000
+  VOXL_ESC_RPM_MIN_RAD_PER_S: 209.43951023931953
+  VOXL_ESC_RPM_MAX_RAD_PER_S: 1256.6370614359173
+  CA_ROTOR_COUNT: 4
+  CA_ROTOR0_PX: 0.095
+  CA_ROTOR0_PY: 0.13
+  CA_ROTOR1_PX: -0.095
+  CA_ROTOR1_PY: -0.13
+  CA_ROTOR2_PX: 0.095
+  CA_ROTOR2_PY: -0.13
+  CA_ROTOR3_PX: -0.095
+  CA_ROTOR3_PY: 0.13
+  CA_ROTOR0_KM: 0.05
+  CA_ROTOR1_KM: 0.05
+  CA_ROTOR2_KM: -0.05
+  CA_ROTOR3_KM: -0.05

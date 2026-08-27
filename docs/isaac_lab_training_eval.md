@@ -1,129 +1,124 @@
-# Isaac Lab Training And Evaluation
+# Isaac Lab Training and Evaluation
 
-PX4-Gym trains and evaluates the Isaac Lab policies from `aerial_isaac/`.
-These scripts use RL-Games and the Aerial Gym controller/task semantics ported
-to Isaac Lab.
+Run all commands from the isolated Starling package:
 
-Tested stack:
-
-- Isaac Sim `5.1.0`
-- Isaac Lab `main`
-- Python environment compatible with Isaac Sim `5.x`
-- RL-Games installed through Isaac Lab or the active Python environment
-
-## Tasks
-
-The current Isaac Lab package registers:
-
-- `AerialIsaac-X500-Position-v0`
-- `AerialIsaac-X500-Velocity-v0`
-- `AerialIsaac-X500-AttitudeDelta-v0`
-
-The policy observation contract for these tasks is:
-
-```text
-[position_error_w(3), orientation_xyzw(4), body_linear_velocity_flu(3),
- body_angular_velocity_flu(3), previous_action(4), yaw_error_over_pi(1)]
+```bash
+cd "${PX4_GYM_ROOT}/rlPx4Controller/starling2max_px4_isaac_port"
 ```
 
-This is an 18-dimensional observation.  Isaac Lab keeps quaternions in `wxyz`
-inside the simulation boundary and converts to `xyzw` only for the policy
-observation.
+If Isaac Lab uses a dedicated virtual environment, launch through Isaac Sim
+with `PYTHONEXE` set to that environment. Otherwise replace the two-line prefix
+below with `"${ISAACSIM_PYTHON}"`.
+
+```bash
+export ISAACLAB_PYTHON="/path/to/IsaacLab/environment/bin/python"
+```
+
+## Registered Tasks
+
+| Script | Task ID | Observation | Policy rate |
+|---|---|---:|---:|
+| `train_starling2max_velocity.py` | `AerialIsaac-Starling2Max-Velocity-v0` | 18 | 100 Hz |
+| `train_starling2max_position.py` | `AerialIsaac-Starling2Max-Position-v0` | 18 | 100 Hz |
+| `train_starling2max_attitude_delta.py` | `AerialIsaac-Starling2Max-AttitudeDelta-v0` | 98 | 100 Hz |
+| `train_starling2max_rates.py` | `AerialIsaac-Starling2Max-Rates-v0` | 98 | 100 Hz |
+| `train_starling2max_navigation.py` | `AerialIsaac-Starling2Max-Navigation-v0` | 81 | 10 Hz |
+| `train_starling2max_depth_attitude_delta.py` | `AerialIsaac-Starling2Max-DepthAttitudeDelta-v0` | 81 | 50 Hz |
+
+The attitude, rate, and depth tasks use the Torch-native RL-PX4 cascade. The
+position and velocity waypoint tasks retain the Lee controller path for their
+existing policy contracts.
 
 ## Smoke Tests
 
-Run these from `aerial_isaac/` after installing the package into the Isaac Lab
-environment:
+The depth smoke tests validate camera geometry, normalization, frozen DCE
+weights, latent size, controller stepping, and observation shape:
 
 ```bash
-${ISAACSIM_PYTHON_EXE} scripts/smoke_x500_position.py --headless
-${ISAACSIM_PYTHON_EXE} scripts/smoke_x500_velocity.py --headless
-${ISAACSIM_PYTHON_EXE} scripts/smoke_x500_attitude_delta.py --headless
+PYTHONEXE="${ISAACLAB_PYTHON}" "${ISAACSIM_PYTHON}" \
+  scripts/smoke_starling2max_navigation.py \
+  --headless --device cuda:0 --num-envs 4 --dump-images /tmp/starling_nav
+
+PYTHONEXE="${ISAACLAB_PYTHON}" "${ISAACSIM_PYTHON}" \
+  scripts/smoke_starling2max_depth_attitude_delta.py \
+  --headless --device cuda:0 --num-envs 4
 ```
 
-If you use an Isaac Lab virtual environment through Isaac Sim's launcher, set
-`PYTHONEXE` first:
+Run the controller unit tests with the environment that has Torch and pytest:
 
 ```bash
-PYTHONEXE=/path/to/IsaacLab/env_isaaclab/bin/python \
-  /path/to/isaacsim/python.sh scripts/smoke_x500_velocity.py --headless
+python -m pytest tests
 ```
 
 ## Training
 
-Run training from `aerial_isaac/`.
-
-Position policy:
+State-only tasks normally use more parallel environments:
 
 ```bash
-${ISAACSIM_PYTHON_EXE} scripts/train_x500_position.py \
-  --headless --device cuda:0 --num-envs 4096
+PYTHONEXE="${ISAACLAB_PYTHON}" "${ISAACSIM_PYTHON}" \
+  scripts/train_starling2max_velocity.py --headless --device cuda:0 --num-envs 4096
+
+PYTHONEXE="${ISAACLAB_PYTHON}" "${ISAACSIM_PYTHON}" \
+  scripts/train_starling2max_position.py --headless --device cuda:0 --num-envs 4096
+
+PYTHONEXE="${ISAACLAB_PYTHON}" "${ISAACSIM_PYTHON}" \
+  scripts/train_starling2max_attitude_delta.py --headless --device cuda:0 --num-envs 4096
+
+PYTHONEXE="${ISAACLAB_PYTHON}" "${ISAACSIM_PYTHON}" \
+  scripts/train_starling2max_rates.py --headless --device cuda:0 --num-envs 4096
 ```
 
-Velocity policy:
+Depth rendering and encoding are heavier; start with 256 environments:
 
 ```bash
-${ISAACSIM_PYTHON_EXE} scripts/train_x500_velocity.py \
-  --headless --device cuda:0 --num-envs 4096
+PYTHONEXE="${ISAACLAB_PYTHON}" "${ISAACSIM_PYTHON}" \
+  scripts/train_starling2max_navigation.py --headless --device cuda:0 --num-envs 256
+
+PYTHONEXE="${ISAACLAB_PYTHON}" "${ISAACSIM_PYTHON}" \
+  scripts/train_starling2max_depth_attitude_delta.py \
+  --headless --device cuda:0 --num-envs 256
 ```
 
-Attitude-delta policy:
-
-```bash
-${ISAACSIM_PYTHON_EXE} scripts/train_x500_attitude_delta.py \
-  --headless --device cuda:0 --num-envs 4096
-```
-
-For a short debug run, pass `--max-epochs` and lower `--num-envs`:
-
-```bash
-${ISAACSIM_PYTHON_EXE} scripts/train_x500_velocity.py \
-  --headless --device cuda:0 --num-envs 16 --max-epochs 5
-```
+Use `--max-epochs` and fewer environments for short debug runs. Checkpoints and
+summaries are written below `runs/` using the RL-Games experiment name.
 
 ## Evaluation
 
-Use the same training script with `--play`, one environment, and an absolute
-checkpoint path.
-
-Position policy:
+Every training script also evaluates with `--play`, one environment, and an
+absolute checkpoint path. For example:
 
 ```bash
-${ISAACSIM_PYTHON_EXE} scripts/train_x500_position.py \
+PYTHONEXE="${ISAACLAB_PYTHON}" "${ISAACSIM_PYTHON}" \
+  scripts/train_starling2max_rates.py \
   --play --device cuda:0 --num-envs 1 \
-  --checkpoint /absolute/path/to/checkpoint.pth
+  --checkpoint /absolute/path/to/starling2max_rates.pth
 ```
 
-Velocity policy:
+For either depth task, fix the initial obstacle count and select a camera view:
 
 ```bash
-${ISAACSIM_PYTHON_EXE} scripts/train_x500_velocity.py \
+PYTHONEXE="${ISAACLAB_PYTHON}" "${ISAACSIM_PYTHON}" \
+  scripts/train_starling2max_navigation.py \
   --play --device cuda:0 --num-envs 1 \
-  --checkpoint /absolute/path/to/checkpoint.pth
+  --curriculum-level 45 --view follow \
+  --checkpoint /absolute/path/to/starling2max_navigation.pth
 ```
 
-Attitude-delta policy:
-
-```bash
-${ISAACSIM_PYTHON_EXE} scripts/train_x500_attitude_delta.py \
-  --play --device cuda:0 --num-envs 1 \
-  --checkpoint /absolute/path/to/checkpoint.pth
-```
+Replace the script and checkpoint with the matching task. Never mix task YAML,
+checkpoint, observation size, or deployment entry point.
 
 ## RL-Games Configs
 
-The task configs live in `aerial_isaac/config/`:
+All six configs live in `config/` and follow the script names:
 
-- `rl_games_x500_position.yaml`
-- `rl_games_x500_velocity.yaml`
-- `rl_games_x500_attitude_delta.yaml`
+```text
+rl_games_starling2max_velocity.yaml
+rl_games_starling2max_position.yaml
+rl_games_starling2max_attitude_delta.yaml
+rl_games_starling2max_rates.yaml
+rl_games_starling2max_navigation.yaml
+rl_games_starling2max_depth_attitude_delta.yaml
+```
 
-Each training script accepts `--config /path/to/config.yaml` if you want to
-run a modified config without replacing the checked-in defaults.
-
-## Controller Attribution
-
-The low-level geometric controller is ported from
-[ntnu-arl/aerial_gym_simulator](https://github.com/ntnu-arl/aerial_gym_simulator).
-This repository ports the controller/task behavior from the Gym workflow to
-Isaac Lab while keeping the deployment-facing policy contract stable.
+Each training script accepts `--config` for an alternate YAML without replacing
+the checked-in default.

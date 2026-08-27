@@ -1,0 +1,746 @@
+<sdf version='1.9'>
+  <world name='default'>
+    <physics type="ode">
+      <max_step_size>0.004</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+      <real_time_update_rate>250</real_time_update_rate>
+    </physics>
+    <plugin name='gz::sim::systems::Physics' filename='gz-sim-physics-system'/>
+    <plugin name='gz::sim::systems::UserCommands' filename='gz-sim-user-commands-system'/>
+    <plugin name='gz::sim::systems::SceneBroadcaster' filename='gz-sim-scene-broadcaster-system'/>
+    <plugin name='gz::sim::systems::Contact' filename='gz-sim-contact-system'/>
+    <plugin name='gz::sim::systems::Imu' filename='gz-sim-imu-system'/>
+    <plugin name='gz::sim::systems::AirPressure' filename='gz-sim-air-pressure-system'/>
+    <plugin name='gz::sim::systems::Sensors' filename='gz-sim-sensors-system'>
+      <render_engine>ogre2</render_engine>
+    </plugin>
+    <gui fullscreen='false'>
+      <plugin name='3D View' filename='GzScene3D'>
+        <gz-gui>
+          <title>3D View</title>
+          <property type='bool' key='showTitleBar'>0</property>
+          <property type='string' key='state'>docked</property>
+        </gz-gui>
+        <engine>ogre2</engine>
+        <scene>scene</scene>
+        <ambient_light>0.5984631152222222 0.5984631152222222 0.5984631152222222</ambient_light>
+        <background_color>0.8984631152222222 0.8984631152222222 0.8984631152222222</background_color>
+        <camera_pose>-6 0 6 0 0.5 0</camera_pose>
+      </plugin>
+      <plugin name='World control' filename='WorldControl'>
+        <gz-gui>
+          <title>World control</title>
+          <property type='bool' key='showTitleBar'>0</property>
+          <property type='bool' key='resizable'>0</property>
+          <property type='double' key='height'>72</property>
+          <property type='double' key='width'>121</property>
+          <property type='double' key='z'>1</property>
+          <property type='string' key='state'>floating</property>
+          <anchors target='3D View'>
+            <line own='left' target='left'/>
+            <line own='bottom' target='bottom'/>
+          </anchors>
+        </gz-gui>
+        <play_pause>1</play_pause>
+        <step>1</step>
+        <start_paused>1</start_paused>
+      </plugin>
+      <plugin name='World stats' filename='WorldStats'>
+        <gz-gui>
+          <title>World stats</title>
+          <property type='bool' key='showTitleBar'>0</property>
+          <property type='bool' key='resizable'>0</property>
+          <property type='double' key='height'>110</property>
+          <property type='double' key='width'>290</property>
+          <property type='double' key='z'>1</property>
+          <property type='string' key='state'>floating</property>
+          <anchors target='3D View'>
+            <line own='right' target='right'/>
+            <line own='bottom' target='bottom'/>
+          </anchors>
+        </gz-gui>
+        <sim_time>1</sim_time>
+        <real_time>1</real_time>
+        <real_time_factor>1</real_time_factor>
+        <iterations>1</iterations>
+      </plugin>
+      <plugin name='Entity tree' filename='EntityTree'/>
+    </gui>
+    <gravity>0 0 -9.8</gravity>
+    <magnetic_field>6e-06 2.3e-05 -4.2e-05</magnetic_field>
+    <atmosphere type='adiabatic'/>
+    <scene>
+      <grid>false</grid>
+      <ambient>0.4 0.4 0.4 1</ambient>
+      <background>0.7 0.7 0.7 1</background>
+      <shadows>true</shadows>
+    </scene>
+    <model name='ground_plane'>
+      <static>true</static>
+      <link name='link'>
+        <collision name='collision'>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>1 1</size>
+            </plane>
+          </geometry>
+          <surface>
+            <friction>
+              <ode/>
+            </friction>
+            <bounce/>
+            <contact/>
+          </surface>
+        </collision>
+        <visual name='visual'>
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+            <specular>0.8 0.8 0.8 1</specular>
+          </material>
+        </visual>
+        <pose>0 0 0 0 -0 0</pose>
+        <inertial>
+          <pose>0 0 0 0 -0 0</pose>
+          <mass>1</mass>
+          <inertia>
+            <ixx>1</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>1</iyy>
+            <iyz>0</iyz>
+            <izz>1</izz>
+          </inertia>
+        </inertial>
+        <enable_wind>false</enable_wind>
+      </link>
+      <pose>0 0 0 0 -0 0</pose>
+      <self_collide>false</self_collide>
+    </model>
+    <model name='tree_1'>
+      <static>true</static>
+      <pose>3 2 0 0 0 0</pose>
+      <link name='tree'>
+        <collision name='trunk_collision'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.18</radius><length>4</length></cylinder>
+          </geometry>
+        </collision>
+        <visual name='trunk_visual'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.18</radius><length>4</length></cylinder>
+          </geometry>
+          <material>
+            <ambient>0.22 0.09 0.03 1</ambient>
+            <diffuse>0.32 0.14 0.05 1</diffuse>
+          </material>
+        </visual>
+        <collision name='canopy_collision'>
+          <pose>0 0 4.2 0 0 0</pose>
+          <geometry>
+            <sphere><radius>1.25</radius></sphere>
+          </geometry>
+        </collision>
+        <visual name='canopy_visual'>
+          <pose>0 0 4.2 0 0 0</pose>
+          <geometry>
+            <sphere><radius>1.25</radius></sphere>
+          </geometry>
+          <material>
+            <ambient>0.03 0.20 0.04 1</ambient>
+            <diffuse>0.05 0.34 0.07 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name='tree_2'>
+      <static>true</static>
+      <pose>3 -2 0 0 0 0.35</pose>
+      <link name='tree'>
+        <collision name='trunk_collision'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.20</radius><length>4</length></cylinder>
+          </geometry>
+        </collision>
+        <visual name='trunk_visual'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.20</radius><length>4</length></cylinder>
+          </geometry>
+          <material>
+            <ambient>0.22 0.09 0.03 1</ambient>
+            <diffuse>0.32 0.14 0.05 1</diffuse>
+          </material>
+        </visual>
+        <collision name='canopy_collision'>
+          <pose>0 0 4.3 0 0 0</pose>
+          <geometry>
+            <sphere><radius>1.35</radius></sphere>
+          </geometry>
+        </collision>
+        <visual name='canopy_visual'>
+          <pose>0 0 4.3 0 0 0</pose>
+          <geometry>
+            <sphere><radius>1.35</radius></sphere>
+          </geometry>
+          <material>
+            <ambient>0.04 0.18 0.03 1</ambient>
+            <diffuse>0.07 0.31 0.06 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name='tree_3'>
+      <static>true</static>
+      <pose>6 0.8 0 0 0 -0.2</pose>
+      <link name='tree'>
+        <collision name='trunk_collision'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.16</radius><length>4</length></cylinder>
+          </geometry>
+        </collision>
+        <visual name='trunk_visual'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.16</radius><length>4</length></cylinder>
+          </geometry>
+          <material>
+            <ambient>0.22 0.09 0.03 1</ambient>
+            <diffuse>0.32 0.14 0.05 1</diffuse>
+          </material>
+        </visual>
+        <collision name='canopy_collision'>
+          <pose>0 0 4.1 0 0 0</pose>
+          <geometry>
+            <sphere><radius>1.15</radius></sphere>
+          </geometry>
+        </collision>
+        <visual name='canopy_visual'>
+          <pose>0 0 4.1 0 0 0</pose>
+          <geometry>
+            <sphere><radius>1.15</radius></sphere>
+          </geometry>
+          <material>
+            <ambient>0.03 0.20 0.04 1</ambient>
+            <diffuse>0.05 0.34 0.07 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name='tree_4'>
+      <static>true</static>
+      <pose>-3 2 0 0 0 0.15</pose>
+      <link name='tree'>
+        <collision name='trunk_collision'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.19</radius><length>4</length></cylinder>
+          </geometry>
+        </collision>
+        <visual name='trunk_visual'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.19</radius><length>4</length></cylinder>
+          </geometry>
+          <material>
+            <ambient>0.22 0.09 0.03 1</ambient>
+            <diffuse>0.32 0.14 0.05 1</diffuse>
+          </material>
+        </visual>
+        <collision name='canopy_collision'>
+          <pose>0 0 4.25 0 0 0</pose>
+          <geometry>
+            <sphere><radius>1.3</radius></sphere>
+          </geometry>
+        </collision>
+        <visual name='canopy_visual'>
+          <pose>0 0 4.25 0 0 0</pose>
+          <geometry>
+            <sphere><radius>1.3</radius></sphere>
+          </geometry>
+          <material>
+            <ambient>0.04 0.18 0.03 1</ambient>
+            <diffuse>0.07 0.31 0.06 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name='tree_5'>
+      <static>true</static>
+      <pose>-4 -1.5 0 0 0 -0.3</pose>
+      <link name='tree'>
+        <collision name='trunk_collision'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.17</radius><length>4</length></cylinder>
+          </geometry>
+        </collision>
+        <visual name='trunk_visual'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.17</radius><length>4</length></cylinder>
+          </geometry>
+          <material>
+            <ambient>0.22 0.09 0.03 1</ambient>
+            <diffuse>0.32 0.14 0.05 1</diffuse>
+          </material>
+        </visual>
+        <collision name='canopy_collision'>
+          <pose>0 0 4.15 0 0 0</pose>
+          <geometry>
+            <sphere><radius>1.2</radius></sphere>
+          </geometry>
+        </collision>
+        <visual name='canopy_visual'>
+          <pose>0 0 4.15 0 0 0</pose>
+          <geometry>
+            <sphere><radius>1.2</radius></sphere>
+          </geometry>
+          <material>
+            <ambient>0.03 0.20 0.04 1</ambient>
+            <diffuse>0.05 0.34 0.07 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name='tree_6'>
+      <static>true</static>
+      <pose>0 -3.5 0 0 0 0.25</pose>
+      <link name='tree'>
+        <collision name='trunk_collision'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.20</radius><length>4</length></cylinder>
+          </geometry>
+        </collision>
+        <visual name='trunk_visual'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.20</radius><length>4</length></cylinder>
+          </geometry>
+          <material>
+            <ambient>0.22 0.09 0.03 1</ambient>
+            <diffuse>0.32 0.14 0.05 1</diffuse>
+          </material>
+        </visual>
+        <collision name='canopy_collision'>
+          <pose>0 0 4.35 0 0 0</pose>
+          <geometry>
+            <sphere><radius>1.4</radius></sphere>
+          </geometry>
+        </collision>
+        <visual name='canopy_visual'>
+          <pose>0 0 4.35 0 0 0</pose>
+          <geometry>
+            <sphere><radius>1.4</radius></sphere>
+          </geometry>
+          <material>
+            <ambient>0.04 0.18 0.03 1</ambient>
+            <diffuse>0.07 0.31 0.06 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name='tree_7'>
+      <static>true</static>
+      <pose>7 -4.5 0 0 0 0</pose>
+      <link name='tree'>
+        <collision name='trunk_collision'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.18</radius><length>4</length></cylinder>
+          </geometry>
+        </collision>
+        <visual name='trunk_visual'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.18</radius><length>4</length></cylinder>
+          </geometry>
+          <material>
+            <ambient>0.22 0.09 0.03 1</ambient>
+            <diffuse>0.32 0.14 0.05 1</diffuse>
+          </material>
+        </visual>
+        <collision name='canopy_collision'>
+          <pose>0 0 4.2 0 0 0</pose>
+          <geometry><sphere><radius>1.25</radius></sphere></geometry>
+        </collision>
+        <visual name='canopy_visual'>
+          <pose>0 0 4.2 0 0 0</pose>
+          <geometry><sphere><radius>1.25</radius></sphere></geometry>
+          <material>
+            <ambient>0.03 0.20 0.04 1</ambient>
+            <diffuse>0.05 0.34 0.07 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name='tree_8'>
+      <static>true</static>
+      <pose>9 4 0 0 0 0</pose>
+      <link name='tree'>
+        <collision name='trunk_collision'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.20</radius><length>4</length></cylinder>
+          </geometry>
+        </collision>
+        <visual name='trunk_visual'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.20</radius><length>4</length></cylinder>
+          </geometry>
+          <material>
+            <ambient>0.22 0.09 0.03 1</ambient>
+            <diffuse>0.32 0.14 0.05 1</diffuse>
+          </material>
+        </visual>
+        <collision name='canopy_collision'>
+          <pose>0 0 4.3 0 0 0</pose>
+          <geometry><sphere><radius>1.35</radius></sphere></geometry>
+        </collision>
+        <visual name='canopy_visual'>
+          <pose>0 0 4.3 0 0 0</pose>
+          <geometry><sphere><radius>1.35</radius></sphere></geometry>
+          <material>
+            <ambient>0.04 0.18 0.03 1</ambient>
+            <diffuse>0.07 0.31 0.06 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name='tree_9'>
+      <static>true</static>
+      <pose>-7 4.5 0 0 0 0</pose>
+      <link name='tree'>
+        <collision name='trunk_collision'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.17</radius><length>4</length></cylinder>
+          </geometry>
+        </collision>
+        <visual name='trunk_visual'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.17</radius><length>4</length></cylinder>
+          </geometry>
+          <material>
+            <ambient>0.22 0.09 0.03 1</ambient>
+            <diffuse>0.32 0.14 0.05 1</diffuse>
+          </material>
+        </visual>
+        <collision name='canopy_collision'>
+          <pose>0 0 4.15 0 0 0</pose>
+          <geometry><sphere><radius>1.2</radius></sphere></geometry>
+        </collision>
+        <visual name='canopy_visual'>
+          <pose>0 0 4.15 0 0 0</pose>
+          <geometry><sphere><radius>1.2</radius></sphere></geometry>
+          <material>
+            <ambient>0.03 0.20 0.04 1</ambient>
+            <diffuse>0.05 0.34 0.07 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name='tree_10'>
+      <static>true</static>
+      <pose>-9 -4 0 0 0 0</pose>
+      <link name='tree'>
+        <collision name='trunk_collision'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.19</radius><length>4</length></cylinder>
+          </geometry>
+        </collision>
+        <visual name='trunk_visual'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.19</radius><length>4</length></cylinder>
+          </geometry>
+          <material>
+            <ambient>0.22 0.09 0.03 1</ambient>
+            <diffuse>0.32 0.14 0.05 1</diffuse>
+          </material>
+        </visual>
+        <collision name='canopy_collision'>
+          <pose>0 0 4.25 0 0 0</pose>
+          <geometry><sphere><radius>1.3</radius></sphere></geometry>
+        </collision>
+        <visual name='canopy_visual'>
+          <pose>0 0 4.25 0 0 0</pose>
+          <geometry><sphere><radius>1.3</radius></sphere></geometry>
+          <material>
+            <ambient>0.04 0.18 0.03 1</ambient>
+            <diffuse>0.07 0.31 0.06 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name='tree_11'>
+      <static>true</static>
+      <pose>2 7 0 0 0 0</pose>
+      <link name='tree'>
+        <collision name='trunk_collision'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.16</radius><length>4</length></cylinder>
+          </geometry>
+        </collision>
+        <visual name='trunk_visual'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.16</radius><length>4</length></cylinder>
+          </geometry>
+          <material>
+            <ambient>0.22 0.09 0.03 1</ambient>
+            <diffuse>0.32 0.14 0.05 1</diffuse>
+          </material>
+        </visual>
+        <collision name='canopy_collision'>
+          <pose>0 0 4.1 0 0 0</pose>
+          <geometry><sphere><radius>1.15</radius></sphere></geometry>
+        </collision>
+        <visual name='canopy_visual'>
+          <pose>0 0 4.1 0 0 0</pose>
+          <geometry><sphere><radius>1.15</radius></sphere></geometry>
+          <material>
+            <ambient>0.03 0.20 0.04 1</ambient>
+            <diffuse>0.05 0.34 0.07 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name='tree_12'>
+      <static>true</static>
+      <pose>-2 -7 0 0 0 0</pose>
+      <link name='tree'>
+        <collision name='trunk_collision'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.20</radius><length>4</length></cylinder>
+          </geometry>
+        </collision>
+        <visual name='trunk_visual'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.20</radius><length>4</length></cylinder>
+          </geometry>
+          <material>
+            <ambient>0.22 0.09 0.03 1</ambient>
+            <diffuse>0.32 0.14 0.05 1</diffuse>
+          </material>
+        </visual>
+        <collision name='canopy_collision'>
+          <pose>0 0 4.35 0 0 0</pose>
+          <geometry><sphere><radius>1.4</radius></sphere></geometry>
+        </collision>
+        <visual name='canopy_visual'>
+          <pose>0 0 4.35 0 0 0</pose>
+          <geometry><sphere><radius>1.4</radius></sphere></geometry>
+          <material>
+            <ambient>0.04 0.18 0.03 1</ambient>
+            <diffuse>0.07 0.31 0.06 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name='tree_13'>
+      <static>true</static>
+      <pose>12 0.5 0 0 0 0</pose>
+      <link name='tree'>
+        <collision name='trunk_collision'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.18</radius><length>4</length></cylinder>
+          </geometry>
+        </collision>
+        <visual name='trunk_visual'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.18</radius><length>4</length></cylinder>
+          </geometry>
+          <material>
+            <ambient>0.22 0.09 0.03 1</ambient>
+            <diffuse>0.32 0.14 0.05 1</diffuse>
+          </material>
+        </visual>
+        <collision name='canopy_collision'>
+          <pose>0 0 4.2 0 0 0</pose>
+          <geometry><sphere><radius>1.25</radius></sphere></geometry>
+        </collision>
+        <visual name='canopy_visual'>
+          <pose>0 0 4.2 0 0 0</pose>
+          <geometry><sphere><radius>1.25</radius></sphere></geometry>
+          <material>
+            <ambient>0.03 0.20 0.04 1</ambient>
+            <diffuse>0.05 0.34 0.07 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name='tree_14'>
+      <static>true</static>
+      <pose>-12 -0.5 0 0 0 0</pose>
+      <link name='tree'>
+        <collision name='trunk_collision'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.18</radius><length>4</length></cylinder>
+          </geometry>
+        </collision>
+        <visual name='trunk_visual'>
+          <pose>0 0 2 0 0 0</pose>
+          <geometry>
+            <cylinder><radius>0.18</radius><length>4</length></cylinder>
+          </geometry>
+          <material>
+            <ambient>0.22 0.09 0.03 1</ambient>
+            <diffuse>0.32 0.14 0.05 1</diffuse>
+          </material>
+        </visual>
+        <collision name='canopy_collision'>
+          <pose>0 0 4.2 0 0 0</pose>
+          <geometry><sphere><radius>1.25</radius></sphere></geometry>
+        </collision>
+        <visual name='canopy_visual'>
+          <pose>0 0 4.2 0 0 0</pose>
+          <geometry><sphere><radius>1.25</radius></sphere></geometry>
+          <material>
+            <ambient>0.03 0.20 0.04 1</ambient>
+            <diffuse>0.05 0.34 0.07 1</diffuse>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <!-- Additional low-cost tree instances spread over the outer ground plane.
+         They share one static link while retaining separate collision shapes. -->
+    <model name='outer_forest'>
+      <static>true</static>
+      <link name='trees'>
+        <collision name='tree_15_trunk_collision'><pose>-38 -35 2 0 0 0</pose><geometry><cylinder><radius>0.18</radius><length>4</length></cylinder></geometry></collision>
+        <visual name='tree_15_trunk_visual'><pose>-38 -35 2 0 0 0</pose><geometry><cylinder><radius>0.18</radius><length>4</length></cylinder></geometry><material><ambient>0.22 0.09 0.03 1</ambient><diffuse>0.32 0.14 0.05 1</diffuse></material></visual>
+        <collision name='tree_15_canopy_collision'><pose>-38 -35 4.2 0 0 0</pose><geometry><sphere><radius>1.25</radius></sphere></geometry></collision>
+        <visual name='tree_15_canopy_visual'><pose>-38 -35 4.2 0 0 0</pose><geometry><sphere><radius>1.25</radius></sphere></geometry><material><ambient>0.03 0.20 0.04 1</ambient><diffuse>0.05 0.34 0.07 1</diffuse></material></visual>
+        <collision name='tree_16_trunk_collision'><pose>-38 -12 2 0 0 0</pose><geometry><cylinder><radius>0.20</radius><length>4</length></cylinder></geometry></collision>
+        <visual name='tree_16_trunk_visual'><pose>-38 -12 2 0 0 0</pose><geometry><cylinder><radius>0.20</radius><length>4</length></cylinder></geometry><material><ambient>0.22 0.09 0.03 1</ambient><diffuse>0.32 0.14 0.05 1</diffuse></material></visual>
+        <collision name='tree_16_canopy_collision'><pose>-38 -12 4.3 0 0 0</pose><geometry><sphere><radius>1.35</radius></sphere></geometry></collision>
+        <visual name='tree_16_canopy_visual'><pose>-38 -12 4.3 0 0 0</pose><geometry><sphere><radius>1.35</radius></sphere></geometry><material><ambient>0.04 0.18 0.03 1</ambient><diffuse>0.07 0.31 0.06 1</diffuse></material></visual>
+        <collision name='tree_17_trunk_collision'><pose>-37 12 2 0 0 0</pose><geometry><cylinder><radius>0.17</radius><length>4</length></cylinder></geometry></collision>
+        <visual name='tree_17_trunk_visual'><pose>-37 12 2 0 0 0</pose><geometry><cylinder><radius>0.17</radius><length>4</length></cylinder></geometry><material><ambient>0.22 0.09 0.03 1</ambient><diffuse>0.32 0.14 0.05 1</diffuse></material></visual>
+        <collision name='tree_17_canopy_collision'><pose>-37 12 4.1 0 0 0</pose><geometry><sphere><radius>1.18</radius></sphere></geometry></collision>
+        <visual name='tree_17_canopy_visual'><pose>-37 12 4.1 0 0 0</pose><geometry><sphere><radius>1.18</radius></sphere></geometry><material><ambient>0.03 0.20 0.04 1</ambient><diffuse>0.05 0.34 0.07 1</diffuse></material></visual>
+        <collision name='tree_18_trunk_collision'><pose>-36 36 2 0 0 0</pose><geometry><cylinder><radius>0.19</radius><length>4</length></cylinder></geometry></collision>
+        <visual name='tree_18_trunk_visual'><pose>-36 36 2 0 0 0</pose><geometry><cylinder><radius>0.19</radius><length>4</length></cylinder></geometry><material><ambient>0.22 0.09 0.03 1</ambient><diffuse>0.32 0.14 0.05 1</diffuse></material></visual>
+        <collision name='tree_18_canopy_collision'><pose>-36 36 4.25 0 0 0</pose><geometry><sphere><radius>1.30</radius></sphere></geometry></collision>
+        <visual name='tree_18_canopy_visual'><pose>-36 36 4.25 0 0 0</pose><geometry><sphere><radius>1.30</radius></sphere></geometry><material><ambient>0.04 0.18 0.03 1</ambient><diffuse>0.07 0.31 0.06 1</diffuse></material></visual>
+        <collision name='tree_19_trunk_collision'><pose>-22 -40 2 0 0 0</pose><geometry><cylinder><radius>0.18</radius><length>4</length></cylinder></geometry></collision>
+        <visual name='tree_19_trunk_visual'><pose>-22 -40 2 0 0 0</pose><geometry><cylinder><radius>0.18</radius><length>4</length></cylinder></geometry><material><ambient>0.22 0.09 0.03 1</ambient><diffuse>0.32 0.14 0.05 1</diffuse></material></visual>
+        <collision name='tree_19_canopy_collision'><pose>-22 -40 4.2 0 0 0</pose><geometry><sphere><radius>1.25</radius></sphere></geometry></collision>
+        <visual name='tree_19_canopy_visual'><pose>-22 -40 4.2 0 0 0</pose><geometry><sphere><radius>1.25</radius></sphere></geometry><material><ambient>0.03 0.20 0.04 1</ambient><diffuse>0.05 0.34 0.07 1</diffuse></material></visual>
+        <collision name='tree_20_trunk_collision'><pose>-23 -22 2 0 0 0</pose><geometry><cylinder><radius>0.16</radius><length>4</length></cylinder></geometry></collision>
+        <visual name='tree_20_trunk_visual'><pose>-23 -22 2 0 0 0</pose><geometry><cylinder><radius>0.16</radius><length>4</length></cylinder></geometry><material><ambient>0.22 0.09 0.03 1</ambient><diffuse>0.32 0.14 0.05 1</diffuse></material></visual>
+        <collision name='tree_20_canopy_collision'><pose>-23 -22 4.1 0 0 0</pose><geometry><sphere><radius>1.15</radius></sphere></geometry></collision>
+        <visual name='tree_20_canopy_visual'><pose>-23 -22 4.1 0 0 0</pose><geometry><sphere><radius>1.15</radius></sphere></geometry><material><ambient>0.03 0.20 0.04 1</ambient><diffuse>0.05 0.34 0.07 1</diffuse></material></visual>
+        <collision name='tree_21_trunk_collision'><pose>-21 20 2 0 0 0</pose><geometry><cylinder><radius>0.20</radius><length>4</length></cylinder></geometry></collision>
+        <visual name='tree_21_trunk_visual'><pose>-21 20 2 0 0 0</pose><geometry><cylinder><radius>0.20</radius><length>4</length></cylinder></geometry><material><ambient>0.22 0.09 0.03 1</ambient><diffuse>0.32 0.14 0.05 1</diffuse></material></visual>
+        <collision name='tree_21_canopy_collision'><pose>-21 20 4.35 0 0 0</pose><geometry><sphere><radius>1.35</radius></sphere></geometry></collision>
+        <visual name='tree_21_canopy_visual'><pose>-21 20 4.35 0 0 0</pose><geometry><sphere><radius>1.35</radius></sphere></geometry><material><ambient>0.04 0.18 0.03 1</ambient><diffuse>0.07 0.31 0.06 1</diffuse></material></visual>
+        <collision name='tree_22_trunk_collision'><pose>-20 40 2 0 0 0</pose><geometry><cylinder><radius>0.18</radius><length>4</length></cylinder></geometry></collision>
+        <visual name='tree_22_trunk_visual'><pose>-20 40 2 0 0 0</pose><geometry><cylinder><radius>0.18</radius><length>4</length></cylinder></geometry><material><ambient>0.22 0.09 0.03 1</ambient><diffuse>0.32 0.14 0.05 1</diffuse></material></visual>
+        <collision name='tree_22_canopy_collision'><pose>-20 40 4.2 0 0 0</pose><geometry><sphere><radius>1.25</radius></sphere></geometry></collision>
+        <visual name='tree_22_canopy_visual'><pose>-20 40 4.2 0 0 0</pose><geometry><sphere><radius>1.25</radius></sphere></geometry><material><ambient>0.03 0.20 0.04 1</ambient><diffuse>0.05 0.34 0.07 1</diffuse></material></visual>
+        <collision name='tree_23_trunk_collision'><pose>-8 -32 2 0 0 0</pose><geometry><cylinder><radius>0.17</radius><length>4</length></cylinder></geometry></collision>
+        <visual name='tree_23_trunk_visual'><pose>-8 -32 2 0 0 0</pose><geometry><cylinder><radius>0.17</radius><length>4</length></cylinder></geometry><material><ambient>0.22 0.09 0.03 1</ambient><diffuse>0.32 0.14 0.05 1</diffuse></material></visual>
+        <collision name='tree_23_canopy_collision'><pose>-8 -32 4.15 0 0 0</pose><geometry><sphere><radius>1.20</radius></sphere></geometry></collision>
+        <visual name='tree_23_canopy_visual'><pose>-8 -32 4.15 0 0 0</pose><geometry><sphere><radius>1.20</radius></sphere></geometry><material><ambient>0.03 0.20 0.04 1</ambient><diffuse>0.05 0.34 0.07 1</diffuse></material></visual>
+        <collision name='tree_24_trunk_collision'><pose>-9 25 2 0 0 0</pose><geometry><cylinder><radius>0.19</radius><length>4</length></cylinder></geometry></collision>
+        <visual name='tree_24_trunk_visual'><pose>-9 25 2 0 0 0</pose><geometry><cylinder><radius>0.19</radius><length>4</length></cylinder></geometry><material><ambient>0.22 0.09 0.03 1</ambient><diffuse>0.32 0.14 0.05 1</diffuse></material></visual>
+        <collision name='tree_24_canopy_collision'><pose>-9 25 4.25 0 0 0</pose><geometry><sphere><radius>1.30</radius></sphere></geometry></collision>
+        <visual name='tree_24_canopy_visual'><pose>-9 25 4.25 0 0 0</pose><geometry><sphere><radius>1.30</radius></sphere></geometry><material><ambient>0.04 0.18 0.03 1</ambient><diffuse>0.07 0.31 0.06 1</diffuse></material></visual>
+        <collision name='tree_25_trunk_collision'><pose>8 -40 2 0 0 0</pose><geometry><cylinder><radius>0.18</radius><length>4</length></cylinder></geometry></collision>
+        <visual name='tree_25_trunk_visual'><pose>8 -40 2 0 0 0</pose><geometry><cylinder><radius>0.18</radius><length>4</length></cylinder></geometry><material><ambient>0.22 0.09 0.03 1</ambient><diffuse>0.32 0.14 0.05 1</diffuse></material></visual>
+        <collision name='tree_25_canopy_collision'><pose>8 -40 4.2 0 0 0</pose><geometry><sphere><radius>1.25</radius></sphere></geometry></collision>
+        <visual name='tree_25_canopy_visual'><pose>8 -40 4.2 0 0 0</pose><geometry><sphere><radius>1.25</radius></sphere></geometry><material><ambient>0.03 0.20 0.04 1</ambient><diffuse>0.05 0.34 0.07 1</diffuse></material></visual>
+        <collision name='tree_26_trunk_collision'><pose>9 -20 2 0 0 0</pose><geometry><cylinder><radius>0.20</radius><length>4</length></cylinder></geometry></collision>
+        <visual name='tree_26_trunk_visual'><pose>9 -20 2 0 0 0</pose><geometry><cylinder><radius>0.20</radius><length>4</length></cylinder></geometry><material><ambient>0.22 0.09 0.03 1</ambient><diffuse>0.32 0.14 0.05 1</diffuse></material></visual>
+        <collision name='tree_26_canopy_collision'><pose>9 -20 4.3 0 0 0</pose><geometry><sphere><radius>1.35</radius></sphere></geometry></collision>
+        <visual name='tree_26_canopy_visual'><pose>9 -20 4.3 0 0 0</pose><geometry><sphere><radius>1.35</radius></sphere></geometry><material><ambient>0.04 0.18 0.03 1</ambient><diffuse>0.07 0.31 0.06 1</diffuse></material></visual>
+        <collision name='tree_27_trunk_collision'><pose>8 22 2 0 0 0</pose><geometry><cylinder><radius>0.16</radius><length>4</length></cylinder></geometry></collision>
+        <visual name='tree_27_trunk_visual'><pose>8 22 2 0 0 0</pose><geometry><cylinder><radius>0.16</radius><length>4</length></cylinder></geometry><material><ambient>0.22 0.09 0.03 1</ambient><diffuse>0.32 0.14 0.05 1</diffuse></material></visual>
+        <collision name='tree_27_canopy_collision'><pose>8 22 4.1 0 0 0</pose><geometry><sphere><radius>1.15</radius></sphere></geometry></collision>
+        <visual name='tree_27_canopy_visual'><pose>8 22 4.1 0 0 0</pose><geometry><sphere><radius>1.15</radius></sphere></geometry><material><ambient>0.03 0.20 0.04 1</ambient><diffuse>0.05 0.34 0.07 1</diffuse></material></visual>
+        <collision name='tree_28_trunk_collision'><pose>10 40 2 0 0 0</pose><geometry><cylinder><radius>0.19</radius><length>4</length></cylinder></geometry></collision>
+        <visual name='tree_28_trunk_visual'><pose>10 40 2 0 0 0</pose><geometry><cylinder><radius>0.19</radius><length>4</length></cylinder></geometry><material><ambient>0.22 0.09 0.03 1</ambient><diffuse>0.32 0.14 0.05 1</diffuse></material></visual>
+        <collision name='tree_28_canopy_collision'><pose>10 40 4.25 0 0 0</pose><geometry><sphere><radius>1.30</radius></sphere></geometry></collision>
+        <visual name='tree_28_canopy_visual'><pose>10 40 4.25 0 0 0</pose><geometry><sphere><radius>1.30</radius></sphere></geometry><material><ambient>0.04 0.18 0.03 1</ambient><diffuse>0.07 0.31 0.06 1</diffuse></material></visual>
+        <collision name='tree_29_trunk_collision'><pose>23 -31 2 0 0 0</pose><geometry><cylinder><radius>0.18</radius><length>4</length></cylinder></geometry></collision>
+        <visual name='tree_29_trunk_visual'><pose>23 -31 2 0 0 0</pose><geometry><cylinder><radius>0.18</radius><length>4</length></cylinder></geometry><material><ambient>0.22 0.09 0.03 1</ambient><diffuse>0.32 0.14 0.05 1</diffuse></material></visual>
+        <collision name='tree_29_canopy_collision'><pose>23 -31 4.2 0 0 0</pose><geometry><sphere><radius>1.25</radius></sphere></geometry></collision>
+        <visual name='tree_29_canopy_visual'><pose>23 -31 4.2 0 0 0</pose><geometry><sphere><radius>1.25</radius></sphere></geometry><material><ambient>0.03 0.20 0.04 1</ambient><diffuse>0.05 0.34 0.07 1</diffuse></material></visual>
+        <collision name='tree_30_trunk_collision'><pose>24 -9 2 0 0 0</pose><geometry><cylinder><radius>0.17</radius><length>4</length></cylinder></geometry></collision>
+        <visual name='tree_30_trunk_visual'><pose>24 -9 2 0 0 0</pose><geometry><cylinder><radius>0.17</radius><length>4</length></cylinder></geometry><material><ambient>0.22 0.09 0.03 1</ambient><diffuse>0.32 0.14 0.05 1</diffuse></material></visual>
+        <collision name='tree_30_canopy_collision'><pose>24 -9 4.15 0 0 0</pose><geometry><sphere><radius>1.20</radius></sphere></geometry></collision>
+        <visual name='tree_30_canopy_visual'><pose>24 -9 4.15 0 0 0</pose><geometry><sphere><radius>1.20</radius></sphere></geometry><material><ambient>0.03 0.20 0.04 1</ambient><diffuse>0.05 0.34 0.07 1</diffuse></material></visual>
+        <collision name='tree_31_trunk_collision'><pose>22 14 2 0 0 0</pose><geometry><cylinder><radius>0.20</radius><length>4</length></cylinder></geometry></collision>
+        <visual name='tree_31_trunk_visual'><pose>22 14 2 0 0 0</pose><geometry><cylinder><radius>0.20</radius><length>4</length></cylinder></geometry><material><ambient>0.22 0.09 0.03 1</ambient><diffuse>0.32 0.14 0.05 1</diffuse></material></visual>
+        <collision name='tree_31_canopy_collision'><pose>22 14 4.35 0 0 0</pose><geometry><sphere><radius>1.35</radius></sphere></geometry></collision>
+        <visual name='tree_31_canopy_visual'><pose>22 14 4.35 0 0 0</pose><geometry><sphere><radius>1.35</radius></sphere></geometry><material><ambient>0.04 0.18 0.03 1</ambient><diffuse>0.07 0.31 0.06 1</diffuse></material></visual>
+        <collision name='tree_32_trunk_collision'><pose>25 34 2 0 0 0</pose><geometry><cylinder><radius>0.18</radius><length>4</length></cylinder></geometry></collision>
+        <visual name='tree_32_trunk_visual'><pose>25 34 2 0 0 0</pose><geometry><cylinder><radius>0.18</radius><length>4</length></cylinder></geometry><material><ambient>0.22 0.09 0.03 1</ambient><diffuse>0.32 0.14 0.05 1</diffuse></material></visual>
+        <collision name='tree_32_canopy_collision'><pose>25 34 4.2 0 0 0</pose><geometry><sphere><radius>1.25</radius></sphere></geometry></collision>
+        <visual name='tree_32_canopy_visual'><pose>25 34 4.2 0 0 0</pose><geometry><sphere><radius>1.25</radius></sphere></geometry><material><ambient>0.03 0.20 0.04 1</ambient><diffuse>0.05 0.34 0.07 1</diffuse></material></visual>
+        <collision name='tree_33_trunk_collision'><pose>39 -37 2 0 0 0</pose><geometry><cylinder><radius>0.19</radius><length>4</length></cylinder></geometry></collision>
+        <visual name='tree_33_trunk_visual'><pose>39 -37 2 0 0 0</pose><geometry><cylinder><radius>0.19</radius><length>4</length></cylinder></geometry><material><ambient>0.22 0.09 0.03 1</ambient><diffuse>0.32 0.14 0.05 1</diffuse></material></visual>
+        <collision name='tree_33_canopy_collision'><pose>39 -37 4.25 0 0 0</pose><geometry><sphere><radius>1.30</radius></sphere></geometry></collision>
+        <visual name='tree_33_canopy_visual'><pose>39 -37 4.25 0 0 0</pose><geometry><sphere><radius>1.30</radius></sphere></geometry><material><ambient>0.04 0.18 0.03 1</ambient><diffuse>0.07 0.31 0.06 1</diffuse></material></visual>
+        <collision name='tree_34_trunk_collision'><pose>38 -17 2 0 0 0</pose><geometry><cylinder><radius>0.16</radius><length>4</length></cylinder></geometry></collision>
+        <visual name='tree_34_trunk_visual'><pose>38 -17 2 0 0 0</pose><geometry><cylinder><radius>0.16</radius><length>4</length></cylinder></geometry><material><ambient>0.22 0.09 0.03 1</ambient><diffuse>0.32 0.14 0.05 1</diffuse></material></visual>
+        <collision name='tree_34_canopy_collision'><pose>38 -17 4.1 0 0 0</pose><geometry><sphere><radius>1.15</radius></sphere></geometry></collision>
+        <visual name='tree_34_canopy_visual'><pose>38 -17 4.1 0 0 0</pose><geometry><sphere><radius>1.15</radius></sphere></geometry><material><ambient>0.03 0.20 0.04 1</ambient><diffuse>0.05 0.34 0.07 1</diffuse></material></visual>
+        <collision name='tree_35_trunk_collision'><pose>40 6 2 0 0 0</pose><geometry><cylinder><radius>0.18</radius><length>4</length></cylinder></geometry></collision>
+        <visual name='tree_35_trunk_visual'><pose>40 6 2 0 0 0</pose><geometry><cylinder><radius>0.18</radius><length>4</length></cylinder></geometry><material><ambient>0.22 0.09 0.03 1</ambient><diffuse>0.32 0.14 0.05 1</diffuse></material></visual>
+        <collision name='tree_35_canopy_collision'><pose>40 6 4.2 0 0 0</pose><geometry><sphere><radius>1.25</radius></sphere></geometry></collision>
+        <visual name='tree_35_canopy_visual'><pose>40 6 4.2 0 0 0</pose><geometry><sphere><radius>1.25</radius></sphere></geometry><material><ambient>0.03 0.20 0.04 1</ambient><diffuse>0.05 0.34 0.07 1</diffuse></material></visual>
+        <collision name='tree_36_trunk_collision'><pose>37 28 2 0 0 0</pose><geometry><cylinder><radius>0.20</radius><length>4</length></cylinder></geometry></collision>
+        <visual name='tree_36_trunk_visual'><pose>37 28 2 0 0 0</pose><geometry><cylinder><radius>0.20</radius><length>4</length></cylinder></geometry><material><ambient>0.22 0.09 0.03 1</ambient><diffuse>0.32 0.14 0.05 1</diffuse></material></visual>
+        <collision name='tree_36_canopy_collision'><pose>37 28 4.3 0 0 0</pose><geometry><sphere><radius>1.35</radius></sphere></geometry></collision>
+        <visual name='tree_36_canopy_visual'><pose>37 28 4.3 0 0 0</pose><geometry><sphere><radius>1.35</radius></sphere></geometry><material><ambient>0.04 0.18 0.03 1</ambient><diffuse>0.07 0.31 0.06 1</diffuse></material></visual>
+        <collision name='tree_37_trunk_collision'><pose>39 42 2 0 0 0</pose><geometry><cylinder><radius>0.17</radius><length>4</length></cylinder></geometry></collision>
+        <visual name='tree_37_trunk_visual'><pose>39 42 2 0 0 0</pose><geometry><cylinder><radius>0.17</radius><length>4</length></cylinder></geometry><material><ambient>0.22 0.09 0.03 1</ambient><diffuse>0.32 0.14 0.05 1</diffuse></material></visual>
+        <collision name='tree_37_canopy_collision'><pose>39 42 4.15 0 0 0</pose><geometry><sphere><radius>1.20</radius></sphere></geometry></collision>
+        <visual name='tree_37_canopy_visual'><pose>39 42 4.15 0 0 0</pose><geometry><sphere><radius>1.20</radius></sphere></geometry><material><ambient>0.03 0.20 0.04 1</ambient><diffuse>0.05 0.34 0.07 1</diffuse></material></visual>
+      </link>
+    </model>
+    <light name='sunUTC' type='directional'>
+      <pose>0 0 500 0 -0 0</pose>
+      <cast_shadows>true</cast_shadows>
+      <intensity>1</intensity>
+      <direction>0.001 0.625 -0.78</direction>
+      <diffuse>0.904 0.904 0.904 1</diffuse>
+      <specular>0.271 0.271 0.271 1</specular>
+      <attenuation>
+        <range>2000</range>
+        <linear>0</linear>
+        <constant>1</constant>
+        <quadratic>0</quadratic>
+      </attenuation>
+      <spot>
+        <inner_angle>0</inner_angle>
+        <outer_angle>0</outer_angle>
+        <falloff>0</falloff>
+      </spot>
+    </light>
+  </world>
+</sdf>

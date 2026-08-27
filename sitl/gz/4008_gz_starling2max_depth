@@ -1,0 +1,10 @@
+#!/bin/sh
+#
+# @name Gazebo starling2max depth
+#
+# @type Quadrotor
+#
+
+PX4_SIM_MODEL=${PX4_SIM_MODEL:=starling2max_depth}
+
+. ${R}etc/init.d-posix/airframes/4007_gz_starling2max
