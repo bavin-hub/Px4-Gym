@@ -1,4 +1,4 @@
-# PX4-Gym
+# Px4-Gym
 
 [![PX4](https://img.shields.io/badge/PX4-v1.14.3-silver.svg)](https://github.com/PX4/PX4-Autopilot/releases/tag/v1.14.3)
 [![IsaacSim](https://img.shields.io/badge/IsaacSim-5.1.0-silver.svg)](https://docs.isaacsim.omniverse.nvidia.com/latest/index.html)
